@@ -1,0 +1,441 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optom CRM — Управление магазином</title>
+    <link rel="stylesheet" href="{% static 'css/crm.css' %}">
+</head>
+
+<body>
+
+<div class="crm-app">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+
+        <a href="/crm/" class="brand">
+            <span class="brand-icon">🛒</span>
+            <span class="brand-text">
+                <strong>OPTOM CRM</strong>
+                <small>Управление магазином</small>
+            </span>
+        </a>
+
+        <nav class="nav">
+            <button class="nav-item active" data-view="dashboard">
+                <span class="nav-icon">📈</span> Обзор
+            </button>
+            <button class="nav-item" data-view="products">
+                <span class="nav-icon">📦</span> Товары
+            </button>
+            <button class="nav-item" data-view="supply">
+                <span class="nav-icon">🚚</span> Поставка
+            </button>
+            <button class="nav-item" data-view="orders">
+                <span class="nav-icon">🧾</span> Заказы
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/" class="side-link" target="_blank">🌐 Открыть витрину</a>
+
+            <div class="user-box">
+                <div class="user-avatar">{{ user.get_username|first|upper }}</div>
+                <div class="user-info">
+                    <strong>{{ user.get_short_name|default:user.get_username }}</strong>
+                    <small>Менеджер</small>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'crm_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Выйти</button>
+            </form>
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1 id="pageTitle">Обзор</h1>
+                <p id="pageSubtitle">Ключевые показатели магазина</p>
+            </div>
+
+            <button class="btn btn-ghost" id="refreshBtn">↻ Обновить</button>
+        </header>
+
+
+        <!-- ============ DASHBOARD ============ -->
+        <section class="view active" data-view="dashboard">
+
+            <div class="stats-grid">
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Выручка</span>
+                        <span class="stat-icon green">💰</span>
+                    </div>
+                    <div class="stat-value" id="statRevenue">—</div>
+                    <div class="stat-sub" id="statRevenueSub">За всё время</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Чистая прибыль</span>
+                        <span class="stat-icon blue">📊</span>
+                    </div>
+                    <div class="stat-value" id="statProfit">—</div>
+                    <div class="stat-sub" id="statProfitSub">За всё время</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Заказы</span>
+                        <span class="stat-icon orange">🧾</span>
+                    </div>
+                    <div class="stat-value" id="statOrders">—</div>
+                    <div class="stat-sub" id="statOrdersSub">Всего заказов</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Средний чек</span>
+                        <span class="stat-icon purple">🧮</span>
+                    </div>
+                    <div class="stat-value" id="statAvg">—</div>
+                    <div class="stat-sub" id="statAvgSub">По оплаченным заказам</div>
+                </article>
+            </div>
+
+            <div class="status-chips" id="statusChips"></div>
+
+            <div class="grid-2-1">
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Выручка за 30 дней</h2>
+                            <p>Без учёта отменённых заказов</p>
+                        </div>
+                    </div>
+                    <div class="chart" id="salesChart"></div>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Мало на складе</h2>
+                            <p>Осталось меньше 5 единиц</p>
+                        </div>
+                    </div>
+                    <div class="low-stock-list" id="lowStockList"></div>
+                </article>
+            </div>
+
+            <div class="grid-2-1">
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Последние заказы</h2>
+                            <p>Свежие заказы с витрины</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Клиент</th>
+                                <th>Сумма</th>
+                                <th>Прибыль</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                            </thead>
+                            <tbody id="recentOrdersBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Топ товаров</h2>
+                            <p>По количеству продаж</p>
+                        </div>
+                    </div>
+                    <div class="top-products" id="topProducts"></div>
+                </article>
+            </div>
+
+        </section>
+
+
+        <!-- ============ PRODUCTS ============ -->
+        <section class="view" data-view="products">
+
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <input
+                        type="search"
+                        class="input"
+                        id="productSearch"
+                        placeholder="Поиск по названию…"
+                    >
+
+                    <select class="input" id="productCategoryFilter">
+                        <option value="all">Все категории</option>
+                    </select>
+
+                    <label class="check">
+                        <input type="checkbox" id="includeInactive">
+                        <span>Показать скрытые</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary" id="addProductBtn">＋ Добавить товар</button>
+            </div>
+
+            <article class="card">
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Категория</th>
+                            <th>Цены, сом</th>
+                            <th>Склад</th>
+                            <th>Статус</th>
+                            <th class="right">Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody id="productsTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+
+        </section>
+
+
+        <!-- ============ SUPPLY ============ -->
+        <section class="view" data-view="supply">
+
+            <div class="supply-layout">
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Приход товара</h2>
+                            <p>Поставка увеличивает остаток на складе</p>
+                        </div>
+                    </div>
+
+                    <form id="supplyForm" class="stack">
+                        <label class="field">
+                            <span>Товар</span>
+                            <select id="supplyProduct" required>
+                                <option value="">— выберите товар —</option>
+                            </select>
+                        </label>
+
+                        <div class="form-row">
+                            <label class="field">
+                                <span>Количество</span>
+                                <input type="number" id="supplyQuantity" min="1" step="1" required>
+                            </label>
+
+                            <label class="field">
+                                <span>Себестоимость, сом</span>
+                                <input type="number" id="supplyCost" min="0" step="0.01" required>
+                            </label>
+                        </div>
+
+                        <label class="field">
+                            <span>Комментарий</span>
+                            <input type="text" id="supplyComment" maxlength="255" placeholder="Например: поставка от поставщика">
+                        </label>
+
+                        <button type="submit" class="btn btn-primary" id="supplySubmitBtn">
+                            Оформить приход
+                        </button>
+                    </form>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>История движений</h2>
+                            <p>Приходы и продажи</p>
+                        </div>
+
+                        <select class="input input-sm" id="operationsFilter">
+                            <option value="all">Все операции</option>
+                            <option value="IN">Приход</option>
+                            <option value="OUT">Расход</option>
+                        </select>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Тип</th>
+                                <th>Кол-во</th>
+                                <th>Себест.</th>
+                                <th>Комментарий</th>
+                                <th>Дата</th>
+                            </tr>
+                            </thead>
+                            <tbody id="operationsTableBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============ ORDERS ============ -->
+        <section class="view" data-view="orders">
+
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="input" id="ordersStatusFilter">
+                        <option value="all">Все заказы</option>
+                        <option value="new">Новые</option>
+                        <option value="processing">В обработке</option>
+                        <option value="completed">Завершённые</option>
+                        <option value="cancelled">Отменённые</option>
+                    </select>
+                </div>
+
+                <span class="muted" id="ordersCountLabel"></span>
+            </div>
+
+            <article class="card">
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Заказ</th>
+                            <th>Клиент</th>
+                            <th>Позиции</th>
+                            <th>Сумма</th>
+                            <th>Прибыль</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+
+        </section>
+
+    </main>
+</div>
+
+
+<!-- ================= PRODUCT MODAL ================= -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <h2 id="productModalTitle">Новый товар</h2>
+                <p>Заполните карточку товара</p>
+            </div>
+            <button type="button" class="modal-close" id="closeProductModal">×</button>
+        </div>
+
+        <form id="productForm">
+            <input type="hidden" id="productId">
+
+            <div class="form-grid">
+                <label class="field span-2">
+                    <span>Наименование *</span>
+                    <input type="text" id="productName" maxlength="255" required>
+                </label>
+
+                <label class="field">
+                    <span>Категория *</span>
+                    <span class="inline-field">
+                        <select id="productCategory" required></select>
+                        <button type="button" class="icon-btn" id="addCategoryBtn" title="Новая категория">＋</button>
+                    </span>
+                </label>
+
+                <label class="field">
+                    <span>Ед. измерения</span>
+                    <input type="text" id="productUnit" maxlength="20" value="шт">
+                </label>
+
+                <label class="field">
+                    <span>Розничная цена, сом *</span>
+                    <input type="number" id="productRetail" min="0" step="0.01" required>
+                </label>
+
+                <label class="field">
+                    <span>Оптовая цена, сом *</span>
+                    <input type="number" id="productWholesale" min="0" step="0.01" required>
+                </label>
+
+                <label class="field">
+                    <span>Мин. кол-во для опта</span>
+                    <input type="number" id="productMinQty" min="0" step="1" value="10">
+                </label>
+
+                <label class="field">
+                    <span>Себестоимость, сом *</span>
+                    <input type="number" id="productCost" min="0" step="0.01" required>
+                </label>
+
+                <label class="field">
+                    <span>Остаток на складе</span>
+                    <input type="number" id="productStock" min="0" step="1" value="0">
+                </label>
+
+                <label class="field">
+                    <span>Ссылка на фото</span>
+                    <input type="url" id="productImageUrl" placeholder="https://…">
+                </label>
+
+                <label class="field span-2">
+                    <span>Загрузить фото (необязательно)</span>
+                    <input type="file" id="productImageFile" accept="image/*">
+                </label>
+
+                <label class="check span-2">
+                    <input type="checkbox" id="productActive" checked>
+                    <span>Показывать товар в каталоге</span>
+                </label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="cancelProductModal">Отмена</button>
+                <button type="submit" class="btn btn-primary" id="saveProductBtn">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+<script>
+    window.CRM_CONFIG = {
+        username: "{{ user.get_username|escapejs }}",
+        loginUrl: "{% url 'crm_login' %}",
+    };
+</script>
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/crm.js' %}"></script>
+
+</body>
+</html>

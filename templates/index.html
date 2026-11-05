@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ store_name }} — Каталог продуктов</title>
+
+    <meta
+        name="description"
+        content="{{ store_name }} — каталог продуктов и товаров. Выберите товары и оформите заказ."
+    >
+
+    <link rel="stylesheet" href="{% static 'css/store.css' %}">
+</head>
+
+<body>
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+    <div class="header-inner">
+
+        <a href="/" class="logo">
+            <div class="logo-icon">🛒</div>
+
+            <div class="logo-text">
+                <strong>OPTOM PRODUCT</strong>
+                <span>OSH • Продукты оптом и в розницу</span>
+            </div>
+        </a>
+
+        <div class="search">
+            <span class="search-icon">🔍</span>
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Поиск товара..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="header-actions">
+            <a href="/crm/" class="crm-link" title="Панель управления">
+                📊 <span>CRM</span>
+            </a>
+
+            <button class="cart-button" onclick="openCart()">
+                🛒
+                <span>Корзина</span>
+                <span id="cartCount">0</span>
+            </button>
+        </div>
+
+    </div>
+</header>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<section class="hero">
+    <div class="hero-box">
+
+        <div class="hero-content">
+            <div class="hero-badge">🥦 Свежие продукты каждый день</div>
+
+            <h1>
+                Всё необходимое<br>
+                в одной корзине
+            </h1>
+
+            <p>
+                Выбирайте продукты, добавляйте их в корзину
+                и оформляйте заказ. Оптовые цены действуют
+                автоматически при покупке от указанного количества.
+            </p>
+        </div>
+
+        <div class="hero-decoration"></div>
+    </div>
+</section>
+
+
+<!-- =========================
+     CATEGORIES
+========================= -->
+
+<section class="categories">
+    <div class="category-list" id="categoryList">
+        <button class="category active" data-category="all">Все товары</button>
+    </div>
+</section>
+
+
+<!-- =========================
+     PRODUCTS
+========================= -->
+
+<section class="products-section">
+
+    <div class="section-header">
+        <h2>Каталог товаров</h2>
+        <span class="products-count" id="productsCount">Загрузка…</span>
+    </div>
+
+    <div class="products" id="products"></div>
+
+</section>
+
+
+<!-- =========================
+     CART
+========================= -->
+
+<div class="cart-overlay" id="cartOverlay" onclick="overlayClick(event)">
+    <aside class="cart">
+
+        <div class="cart-header">
+            <h3>🛒 Ваша корзина</h3>
+
+            <button class="close-cart" onclick="closeCart()">×</button>
+        </div>
+
+        <div class="cart-items" id="cartItems"></div>
+
+        <div class="cart-footer">
+
+            <div class="total">
+                <span>Итого</span>
+                <strong id="total">0 сом</strong>
+            </div>
+
+            <div class="customer-form">
+                <input
+                    type="text"
+                    id="customerName"
+                    placeholder="Ваше имя"
+                    autocomplete="name"
+                    maxlength="100"
+                >
+                <input
+                    type="tel"
+                    id="customerPhone"
+                    placeholder="Телефон, например +996 700 123 456"
+                    autocomplete="tel"
+                    maxlength="30"
+                >
+                <div class="form-note">
+                    Заказ сохранится в системе магазина, а мы откроем
+                    WhatsApp с готовым сообщением.
+                </div>
+            </div>
+
+            <button class="order-btn" id="orderBtn" onclick="submitOrder()" disabled>
+                Оформить заказ
+            </button>
+
+        </div>
+
+    </aside>
+</div>
+
+
+<!-- =========================
+     TOAST
+========================= -->
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+    window.SHOP_CONFIG = {
+        whatsapp: "{{ whatsapp_number|escapejs }}",
+        storeName: "{{ store_name|escapejs }}"
+    };
+</script>
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/store.js' %}"></script>
+
+</body>
+</html>

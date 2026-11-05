@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в Optom CRM</title>
+    <link rel="stylesheet" href="{% static 'css/crm.css' %}">
+</head>
+
+<body class="login-body">
+
+<div class="login-card">
+
+    <div class="login-brand">
+        <span>🛒</span>
+        OPTOM CRM
+    </div>
+
+    <h1>Вход в панель</h1>
+    <p>Управление товарами, поставками и заказами магазина.</p>
+
+    <form method="post" class="login-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="login-error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <label>
+            Логин
+            {{ form.username }}
+        </label>
+
+        <label>
+            Пароль
+            {{ form.password }}
+        </label>
+
+        <button type="submit">Войти</button>
+    </form>
+
+    <a href="/" class="login-back">← Вернуться в магазин</a>
+
+</div>
+
+</body>
+</html>
