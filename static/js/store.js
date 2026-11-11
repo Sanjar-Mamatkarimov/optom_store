@@ -539,7 +539,7 @@
                 customer_phone: phone,
             });
 
-            const message = buildWhatsAppMessage(order, name, phone);
+            const message = buildWhatsAppMessage(order, name, phone, entries);
             const waUrl = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
 
             if (waWindow && !waWindow.closed) {
@@ -564,7 +564,7 @@
         }
     }
 
-    function buildWhatsAppMessage(order, name, phone) {
+    function buildWhatsAppMessage(order, name, phone, entries) {
         let message = 'Здравствуйте! Заказ №' + order.id + ' — ' + STORE_NAME + '.\n\n';
         message += '🛒 *Состав заказа:*\n\n';
 
@@ -572,6 +572,14 @@
             message += (index + 1) + '. ' + item.product_name + '\n';
             message += '   ' + item.quantity + ' × ' + item.price_per_item
                 + ' сом = ' + item.total + ' сом\n\n';
+
+            const entry = entries.find(function (cartEntry) {
+                return String(cartEntry.product.id) === String(item.product);
+            });
+            if (entry && entry.product.image_src) {
+                const imageUrl = new URL(entry.product.image_src, window.location.href).href;
+                message += '   📷 Фото товара: ' + imageUrl + '\n\n';
+            }
         });
 
         message += '💰 *Итого: ' + order.total_amount + ' сом*\n\n';
