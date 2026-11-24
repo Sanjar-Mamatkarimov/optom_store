@@ -157,33 +157,6 @@ header {
     gap: 10px;
 }
 
-.crm-link {
-    height: 48px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-
-    padding: 0 15px;
-
-    border: 1px solid var(--border);
-    border-radius: 15px;
-
-    background: white;
-    color: var(--text);
-
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 800;
-
-    transition: .25s;
-}
-
-.crm-link:hover {
-    border-color: var(--green);
-    color: var(--green-dark);
-    background: var(--green-light);
-}
-
 .cart-button {
     position: relative;
 
@@ -1146,10 +1119,6 @@ header {
         flex-basis: 100%;
 
         max-width: none;
-    }
-
-    .crm-link span {
-        display: none;
     }
 
     .hero {
